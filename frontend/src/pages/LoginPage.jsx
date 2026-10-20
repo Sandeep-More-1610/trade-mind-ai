@@ -54,6 +54,9 @@ export default function LoginPage() {
             {loading ? "Please wait..." : mode === "login" ? "Sign In →" : "Create Account →"}
           </button>
         </form>
+        {loading && process.env.REACT_APP_DEMO_MODE === "true" && (
+          <p style={S.note} role="status">The free demo server may take up to 5 minutes to wake up. Please keep this page open.</p>
+        )}
 
         {mode === "register" && (
           <p style={S.note}>🎉 Get ₹10,00,000 virtual money to start trading risk-free!</p>
