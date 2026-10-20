@@ -102,11 +102,12 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
           BACKEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
           AI_HOOK: ${{ secrets.RENDER_AI_DEPLOY_HOOK }}
         run: |
           frontend=false; backend=false; ai=false
-          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]]; then frontend=true; fi
+          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" && -n "$REACT_APP_API_URL" ]]; then frontend=true; fi
           if [[ -n "$BACKEND_HOOK" ]]; then backend=true; fi
           if [[ -n "$AI_HOOK" ]]; then ai=true; fi
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
@@ -123,6 +124,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
