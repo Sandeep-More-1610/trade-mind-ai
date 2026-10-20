@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     "ai.service.url=http://127.0.0.1:9",
     "jwt.secret=TradeMindIntegrationTestSecretAtLeast32BytesLong"
 })
-@ActiveProfiles("dev")
+@ActiveProfiles("demo")
 class ApplicationSmokeTest {
     @Autowired TestRestTemplate client;
 

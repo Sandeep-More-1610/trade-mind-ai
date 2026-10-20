@@ -4,7 +4,7 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080/api",
-  timeout: 15000,
+  timeout: process.env.REACT_APP_DEMO_MODE === "true" ? 120000 : 15000,
 });
 
 // Attach JWT token to every request automatically

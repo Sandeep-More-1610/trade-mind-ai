@@ -31,6 +31,7 @@ export default function LoginPage() {
         <div style={S.logo}>⬡ TradeMind<span style={{color:"#00d4aa"}}>AI</span></div>
         <p style={S.sub}>India's AI-Powered Stock Intelligence Platform</p>
 
+        {process.env.REACT_APP_DEMO_MODE === "true" && <p style={S.note}>Free demo: simulated prices and lightweight indicators. Accounts and virtual trades reset when the server restarts. No real money is used.</p>}
         <div style={S.tabs}>
           {["login","register"].map(m => (
             <button key={m} style={{...S.tab, ...(mode===m ? S.tabActive : {})}}

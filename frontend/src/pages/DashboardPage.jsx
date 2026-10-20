@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
         {/* Right: stocks list */}
         <div style={D.stockList}>
-          <div style={D.listHeader}>Live Watchlist</div>
+          <div style={D.listHeader}>Watchlist</div>
           {stocks.map(s => (
             <div key={s.symbol} style={{...D.stockRow, ...(selected===s.symbol ? D.rowActive : {})}}
                  onClick={() => setSelected(s.symbol)}>

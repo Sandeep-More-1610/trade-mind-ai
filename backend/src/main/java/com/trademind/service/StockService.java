@@ -22,6 +22,12 @@ public class StockService {
     @Value("${finnhub.api.key}")
     private String finnhubKey;
 
+    @Value("${trademind.demo:false}")
+    private boolean demo;
+
+    @Value("${ai.service.url}")
+    private String aiServiceUrl;
+
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://finnhub.io/api/v1")
             .build();
@@ -31,6 +37,7 @@ public class StockService {
     }
 
     public Optional<Stock> getQuote(String symbol) {
+        if (demo) return stockRepo.findBySymbol(symbol);
         // Try live Finnhub price first
         try {
             Map<?,?> resp = webClient.get()
@@ -54,6 +61,15 @@ public class StockService {
     }
 
     public List<?> getPriceHistory(String symbol, String period) {
+        if (demo) {
+            try {
+                Map<?, ?> history = WebClient.create().get()
+                    .uri(aiServiceUrl + "/history/" + symbol + "?period=" + period)
+                    .retrieve().bodyToMono(Map.class).block(java.time.Duration.ofSeconds(12));
+                if (history != null && history.get("data") instanceof List<?> rows) return rows;
+            } catch (Exception ignored) { }
+            return List.of();
+        }
         int days = switch (period) {
             case "1W" -> 7;
             case "1M" -> 30;

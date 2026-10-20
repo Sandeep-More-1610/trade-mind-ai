@@ -79,7 +79,7 @@ function AppLayout() {
         <div style={A.topbar}>
           <div style={{display:"flex", alignItems:"center", gap:8}}>
             <span style={A.liveDot}></span>
-            <span style={{fontSize:"0.78rem", color:"#94a3b8"}}>{process.env.NODE_ENV === "development" ? "Local development · sample prices" : "NSE/BSE Live Market"}</span>
+            <span style={{fontSize:"0.78rem", color:"#94a3b8"}}>{process.env.REACT_APP_DEMO_MODE === "true" ? "Free demo · simulated prices · data resets on restart" : process.env.NODE_ENV === "development" ? "Local development · sample prices" : "NSE/BSE Live Market"}</span>
           </div>
           <div style={{fontSize:"0.78rem", color:"#475569"}}>
             {new Date().toLocaleString("en-IN", {timeZone:"Asia/Kolkata",

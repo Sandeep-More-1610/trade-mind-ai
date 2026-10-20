@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { predictAPI } from "../services/api";
 
 export default function PredictionPage() {
+  const demo = process.env.REACT_APP_DEMO_MODE === "true";
   const [symbol,     setSymbol]     = useState("TCS");
   const [prediction, setPrediction] = useState(null);
   const [loading,    setLoading]    = useState(false);
@@ -24,7 +25,7 @@ export default function PredictionPage() {
     <div style={{padding:"1.5rem", maxWidth:900, margin:"0 auto"}}>
       <h2 style={{marginBottom:8}}>🔮 AI Market Brain</h2>
       <p style={{color:"#94a3b8", marginBottom:"1.5rem"}}>
-        5-signal fusion: LSTM · XGBoost · Random Forest · FinBERT NLP · Technical Indicators
+        {demo ? "Free demo: moving-average indicators on simulated prices. Trained ML and live sentiment are disabled." : "5-signal fusion: LSTM · XGBoost · Random Forest · FinBERT NLP · Technical Indicators"}
       </p>
 
       <div style={{display:"flex", gap:10, marginBottom:"2rem"}}>
@@ -40,10 +41,10 @@ export default function PredictionPage() {
         <div style={P.resultGrid}>
           {/* Score */}
           <div style={P.card}>
-            <div style={P.cardLabel}>AI Market Score</div>
+            <div style={P.cardLabel}>{demo ? "Demo indicator score" : "AI Market Score"}</div>
             <div style={{...P.scoreCircle, borderColor: signalColor[prediction.signal] + "55"}}>
               <div style={{fontSize:"2.5rem", fontWeight:700, color: signalColor[prediction.signal]}}>
-                {prediction.ai_score}
+                {prediction.ai_score ?? prediction.aiScore}
               </div>
               <div style={{fontSize:"0.7rem", color:"#94a3b8"}}>/100</div>
             </div>
@@ -57,9 +58,9 @@ export default function PredictionPage() {
           <div style={P.card}>
             <div style={P.cardLabel}>Signal Details — {prediction.symbol}</div>
             {[
-              ["Confidence",    `${prediction.confidence}%`],
+              [demo ? "Mode" : "Confidence", demo ? "Simulated indicator demo" : `${prediction.confidence}%`],
               ["Sentiment",     prediction.sentiment],
-              ["Risk Level",    prediction.risk_level],
+              ["Risk Level",    prediction.risk_level ?? prediction.riskLevel],
               ["Trend",         prediction.trend],
             ].map(([k,v]) => (
               <div key={k} style={P.detailRow}>

@@ -35,3 +35,11 @@ Configure repository secrets under Settings → Secrets and variables → Action
 - `RENDER_AI_DEPLOY_HOOK`: AI deploy-hook URL.
 
 Treat tokens, database passwords, and deploy-hook URLs as secrets. Do not commit them or paste them into chat. Hosting-account sign-in and any new permissions or paid services must be resolved before provisioning. Once configured, push to `main` to run all checks and the enabled deployment jobs. For Render services, disable duplicate automatic deployments if GitHub Actions is intended to control releases.
+
+## Approved free demo
+
+The free hosted demonstration uses `demo_app:app` with `requirements-demo.txt` for the AI service and the Spring `demo` profile for the backend. It has no provider keys, persistent database, or trained ML models. Market histories and prices are simulated and clearly marked; indicator scores are calculations on those samples. No live news, sentiment, Reddit, or fraud monitoring is provided. The full ML implementation remains in `ai-service/app.py`.
+
+Configure the AI service as Python 3.11, root `ai-service`, build `pip install -r requirements-demo.txt`, start `gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 demo_app:app`, and Free compute. Configure the backend as Docker with root `backend`, Free compute, `SPRING_PROFILES_ACTIVE=demo`, a generated `JWT_SECRET`, `AI_SERVICE_URL`, `FRONTEND_URL`, and `JAVA_TOOL_OPTIONS=-Xmx192m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=32m -Xss512k -XX:ActiveProcessorCount=2`.
+
+On Vercel, use root `frontend` and set `REACT_APP_DEMO_MODE=true` and `REACT_APP_API_URL` to the hosted backend plus `/api`. Free Render services can sleep after inactivity; initial requests may take a minute. Accounts and trades reset on service restart or redeployment, and both services share the workspace's free instance-hour allowance. Do not add a payment method or enable paid resources for this free demo.
