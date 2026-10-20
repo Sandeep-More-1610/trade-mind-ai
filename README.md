@@ -180,6 +180,6 @@ Push to `main` → GitHub Actions runs tests → auto-deploys all 3 services.
 
 ## 👤 Team
 
-**Team Lunar Tear** · Sandeep Namdevrao More · VIT Chennai
+**Team Lunar Tear** · Sandeep Namdevrao More · VIT Vellore
 
 Built for **HACK303 — CODE CATALYST Hackathon**
