@@ -26,3 +26,7 @@ application-local.yaml
 .DS_Store
 Thumbs.db
 *.log
+
+# Local development database
+.local-data/
+.local-run/

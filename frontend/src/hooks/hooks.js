@@ -1,5 +1,5 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 // src/hooks/useAuth.js
-import { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "../services/api";
 import toast from "react-hot-toast";
 
@@ -52,7 +52,6 @@ export const useAuth = () => useContext(AuthContext);
 
 
 // src/hooks/useStocks.js
-import { useState, useEffect, useCallback } from "react";
 import { stocksAPI } from "../services/api";
 
 export function useStocks() {
@@ -83,7 +82,6 @@ export function useStocks() {
 
 
 // src/hooks/usePrediction.js
-import { useState, useEffect } from "react";
 import { predictAPI } from "../services/api";
 
 export function usePrediction(symbol) {
@@ -104,7 +102,6 @@ export function usePrediction(symbol) {
 
 
 // src/hooks/usePortfolio.js
-import { useState, useEffect } from "react";
 import { portfolioAPI } from "../services/api";
 
 export function usePortfolio() {

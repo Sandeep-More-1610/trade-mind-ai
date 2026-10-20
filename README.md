@@ -59,6 +59,14 @@ trademind/
 
 ---
 
+## Run locally on this Windows computer
+
+The local `dev` profile uses a separate H2 database in `backend/.local-data/` and an in-memory cache. It leaves the MySQL configuration unchanged and starts with the sample stock prices from `database/schema.sql`.
+
+After dependencies are installed and the backend is built, run `./start-local.ps1` from PowerShell, then open http://localhost:3000. The frontend, backend, and AI service use ports 3000, 8080, and 5000. Startup logs are saved in `.local-run/`.
+
+Register a local account to use the dashboard. Live provider features require your own Finnhub, NewsAPI, and Reddit environment variables. Sample prices and fallback predictions are not live market results.
+
 ## 🚀 Local Setup
 
 ### Prerequisites
@@ -174,7 +182,9 @@ Combined into one **AI Market Brain Score (0–100)** → BUY / HOLD / SELL
 | Database   | PlanetScale / Railway (MySQL)        |
 | Cache      | Upstash (Redis)                      |
 
-Push to `main` → GitHub Actions runs tests → auto-deploys all 3 services.
+Push to `main` → GitHub Actions builds the frontend and runs backend and AI health tests. Deployments run only after all checks pass and the corresponding Vercel or Render secrets are configured. Without deployment credentials, the deployment jobs are skipped.
+
+The AI CI job uses CPU-only PyTorch wheels from the official PyTorch index and disables pip caching to avoid filling the runner with unused CUDA libraries. The backend integration test uses an isolated in-memory H2 database; it does not need MySQL, Redis, or API credentials.
 
 ---
 

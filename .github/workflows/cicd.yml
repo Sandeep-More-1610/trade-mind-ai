@@ -1,7 +1,3 @@
-# ============================================================
-#  .github/workflows/cicd.yml  — CI/CD Pipeline
-#  Vercel (Frontend) + Render (Backend) auto-deploy on push
-# ============================================================
 name: TradeMind AI — CI/CD Pipeline
 
 on:
@@ -10,159 +6,155 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  # ── 1. Test Python AI Service ─────────────────────────────
   test-ai-service:
     name: 🧪 Test Python AI Service
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: ai-service
-
+    env:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      CUDA_VISIBLE_DEVICES: "-1"
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
+      # CPU wheels avoid downloading several GB of unused CUDA libraries.
+      - name: Install CPU PyTorch
+        run: python -m pip install --no-cache-dir torch==2.1.2 --index-url https://download.pytorch.org/whl/cpu
       - name: Install dependencies
-        run: pip install -r requirements.txt
-
+        run: python -m pip install --no-cache-dir -r requirements.txt
       - name: Run Flask health test
         run: |
-          python -c "
+          python - <<'PY'
           from app import app
-          client = app.test_client()
-          resp = client.get('/health')
-          assert resp.status_code == 200
-          print('✅ AI Service health check passed')
-          "
+          response = app.test_client().get('/health')
+          assert response.status_code == 200
+          assert response.get_json()['status'] == 'ok'
+          print('AI service imported successfully and health check passed')
+          PY
 
-  # ── 2. Build & Test Spring Boot Backend ──────────────────
   test-backend:
     name: 🧪 Test Spring Boot Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: testpass
-          MYSQL_DATABASE:      trademind_db
-        ports: ["3306:3306"]
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
-
-      redis:
-        image: redis:7
-        ports: ["6379:6379"]
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: "17"
-          distribution: "temurin"
+          distribution: temurin
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Build and test backend
+        run: mvn --batch-mode --no-transfer-progress verify
 
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-
-      - name: Run Maven tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/trademind_db
-          SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: testpass
-          JWT_SECRET: testSecretKeyForCI2024!
-        run: mvn test --no-transfer-progress
-
-  # ── 3. Build React Frontend ───────────────────────────────
   build-frontend:
     name: 🏗️ Build React Frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production bundle
-        env:
-          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-        run: npm run build
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-build
-          path: frontend/build/
-
-  # ── 4. Deploy Frontend to Vercel ─────────────────────────
-  deploy-frontend:
-    name: 🚀 Deploy Frontend → Vercel
-    needs: [build-frontend, test-backend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build production bundle
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+        run: npm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          if-no-files-found: error
+          retention-days: 7
 
+  deployment-config:
+    name: Check deployment configuration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      frontend: ${{ steps.config.outputs.frontend }}
+      backend: ${{ steps.config.outputs.backend }}
+      ai: ${{ steps.config.outputs.ai }}
+    steps:
+      - name: Check configured credentials
+        id: config
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          BACKEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          AI_HOOK: ${{ secrets.RENDER_AI_DEPLOY_HOOK }}
+        run: |
+          frontend=false; backend=false; ai=false
+          if [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]]; then frontend=true; fi
+          if [[ -n "$BACKEND_HOOK" ]]; then backend=true; fi
+          if [[ -n "$AI_HOOK" ]]; then ai=true; fi
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "ai=$ai" >> "$GITHUB_OUTPUT"
+          echo "Deployment configured — frontend: $frontend, backend: $backend, AI: $ai" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-frontend:
+    name: 🚀 Deploy Frontend → Vercel
+    needs: [build-frontend, test-backend, test-ai-service, deployment-config]
+    runs-on: ubuntu-latest
+    if: needs.deployment-config.outputs.frontend == 'true'
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Install Vercel CLI
         run: npm install -g vercel
-
       - name: Deploy to Vercel
-        env:
-          VERCEL_TOKEN:   ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID:  ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: frontend
         run: |
-          cd frontend
-          vercel pull --yes --token=$VERCEL_TOKEN
-          vercel build --prod --token=$VERCEL_TOKEN
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          vercel pull --yes --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
 
-  # ── 5. Deploy Backend to Render ──────────────────────────
   deploy-backend:
     name: 🚀 Deploy Backend → Render
-    needs: [test-backend]
+    needs: [build-frontend, test-backend, test-ai-service, deployment-config]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
+    if: needs.deployment-config.outputs.backend == 'true'
     steps:
-      - name: Trigger Render Deploy Hook
-        run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      - name: Trigger Render deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl --fail --show-error --silent --request POST "$DEPLOY_HOOK"
 
-  # ── 6. Deploy AI Service to Render ───────────────────────
   deploy-ai:
     name: 🚀 Deploy AI Service → Render
-    needs: [test-ai-service]
+    needs: [build-frontend, test-backend, test-ai-service, deployment-config]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
+    if: needs.deployment-config.outputs.ai == 'true'
     steps:
-      - name: Trigger AI Service Deploy
-        run: |
-          curl -X POST "${{ secrets.RENDER_AI_DEPLOY_HOOK }}"
+      - name: Trigger Render deploy
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_AI_DEPLOY_HOOK }}
+        run: curl --fail --show-error --silent --request POST "$DEPLOY_HOOK"
