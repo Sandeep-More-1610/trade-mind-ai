@@ -182,7 +182,7 @@ Combined into one **AI Market Brain Score (0–100)** → BUY / HOLD / SELL
 | Database   | PlanetScale / Railway (MySQL)        |
 | Cache      | Upstash (Redis)                      |
 
-Push to `main` → GitHub Actions builds the frontend and runs backend and AI health tests. Deployments run only after all checks pass and the corresponding Vercel or Render secrets are configured. Without deployment credentials, the deployment jobs are skipped.
+Push to `main` → GitHub Actions builds and tests the project. Vercel deploys the frontend through its GitHub integration; Render deploys the free demo services after CI checks pass. Hosting credentials are managed by the providers, and the workflow does not require deployment tokens. See [DEPLOYMENT.md](DEPLOYMENT.md) for setup and demo limitations.
 
 The AI CI job uses CPU-only PyTorch wheels from the official PyTorch index and disables pip caching to avoid filling the runner with unused CUDA libraries. The backend integration test uses an isolated in-memory H2 database; it does not need MySQL, Redis, or API credentials.
 

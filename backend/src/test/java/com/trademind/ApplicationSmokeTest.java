@@ -41,6 +41,16 @@ class ApplicationSmokeTest {
         var summary = client.exchange("/api/portfolio/summary", HttpMethod.GET, request, Map.class);
         assertThat(summary.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(((Number) summary.getBody().get("balance")).doubleValue()).isEqualTo(1000000.0);
+        var order = new HttpEntity<>(Map.of("symbol", "TCS", "quantity", 1), headers);
+        var buy = client.exchange("/api/trade/buy", HttpMethod.POST, order, Map.class);
+        assertThat(buy.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(((Number) buy.getBody().get("newBalance")).doubleValue()).isEqualTo(996188.0);
+        var sell = client.exchange("/api/trade/sell", HttpMethod.POST, order, Map.class);
+        assertThat(sell.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(((Number) sell.getBody().get("newBalance")).doubleValue()).isEqualTo(1000000.0);
+        var trades = client.exchange("/api/trade/history", HttpMethod.GET, request, String.class);
+        assertThat(trades.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(trades.getBody()).doesNotContain("password", "LocalTestPassword123!");
         var leaders = client.exchange("/api/leaderboard", HttpMethod.GET, request, Map[].class);
         assertThat(leaders.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(leaders.getBody()).anySatisfy(row -> assertThat(row.get("name")).isEqualTo("CI Trader"));

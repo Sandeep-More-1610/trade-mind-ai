@@ -1,6 +1,7 @@
 package com.trademind.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class User {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

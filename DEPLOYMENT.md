@@ -25,16 +25,13 @@ The production profile validates the schema, uses an in-memory cache, and does n
 
 Import the repository with root directory `frontend`. `vercel.json` configures the React build and browser-route rewrites. Set the production environment variable `REACT_APP_API_URL` to the backend's HTTPS URL followed by `/api`. Redeploy after changing this build-time value.
 
-## GitHub Actions secrets
+## Automatic deployment
 
-Configure repository secrets under Settings → Secrets and variables → Actions:
+Vercel and Render are connected directly to `Sandeep-More-1610/trade-mind-ai` through their GitHub apps. Vercel builds the `frontend` root on pushes to `main`; Render's demo services use **After CI Checks Pass**. GitHub Actions validates the frontend, backend, full AI import, and lightweight demo. The old token-based deployment jobs have been removed: no Vercel token or Render deploy-hook secret is needed in GitHub Actions for this setup.
 
-- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
-- `REACT_APP_API_URL`: backend HTTPS URL ending in `/api`.
-- `RENDER_DEPLOY_HOOK_URL`: backend deploy-hook URL.
-- `RENDER_AI_DEPLOY_HOOK`: AI deploy-hook URL.
-
-Treat tokens, database passwords, and deploy-hook URLs as secrets. Do not commit them or paste them into chat. Hosting-account sign-in and any new permissions or paid services must be resolved before provisioning. Once configured, push to `main` to run all checks and the enabled deployment jobs. For Render services, disable duplicate automatic deployments if GitHub Actions is intended to control releases.
+Hosted demo frontend: https://trade-mind-ai-delta-plum.vercel.app
+Backend health: https://trademind-backend-demo.onrender.com/actuator/health
+Indicator service health: https://trademind-ai-demo.onrender.com/health
 
 ## Approved free demo
 

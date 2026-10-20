@@ -23,7 +23,7 @@ export default function PredictionPage() {
 
   return (
     <div style={{padding:"1.5rem", maxWidth:900, margin:"0 auto"}}>
-      <h2 style={{marginBottom:8}}>🔮 AI Market Brain</h2>
+      <h2 style={{marginBottom:8}}>{demo ? "📈 Demo indicators" : "🔮 AI Market Brain"}</h2>
       <p style={{color:"#94a3b8", marginBottom:"1.5rem"}}>
         {demo ? "Free demo: moving-average indicators on simulated prices. Trained ML and live sentiment are disabled." : "5-signal fusion: LSTM · XGBoost · Random Forest · FinBERT NLP · Technical Indicators"}
       </p>
@@ -33,7 +33,7 @@ export default function PredictionPage() {
                onChange={e => setSymbol(e.target.value.toUpperCase())}
                placeholder="Enter symbol e.g. TCS" />
         <button style={P.btn} onClick={handlePredict} disabled={loading}>
-          {loading ? "Analysing AI..." : "Run AI Prediction"}
+          {loading ? "Analysing..." : demo ? "Calculate demo indicators" : "Run AI Prediction"}
         </button>
       </div>
 
