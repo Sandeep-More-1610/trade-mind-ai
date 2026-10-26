@@ -1,195 +1,99 @@
-# ⬡ TradeMind AI — Full-Stack Stock Intelligence Platform
+# TradeMind AI
 
-> **HACK303 · CODE CATALYST · Team Lunar Tear · VIT**
-> An all-in-one AI platform for retail investors — LSTM predictions, NLP sentiment, virtual trading & fraud detection.
+A full-stack stock research and virtual-trading project built with React, Spring Boot, and Python Flask. The full AI service contains experimental LSTM, XGBoost, Random Forest, and pretrained FinBERT pipelines. A separate lightweight hosted demo uses simulated data.
 
----
+**Built by Sandeep More at VIT Vellore.** Placed **3rd at the Code Catalyst Hackathon** as a solo participant under the one-person team name **Lunar Tear**.
 
-## 🏗️ Architecture
+[Hosted demo](https://trade-mind-ai-delta-plum.vercel.app) | [Deployment guide](DEPLOYMENT.md) | [Model implementation notes](MODEL_NOTES.md)
 
-```
-┌─────────────────┐     JWT      ┌──────────────────────┐     REST     ┌─────────────────────┐
-│  React Frontend │ ──────────▶  │  Spring Boot Backend │ ──────────▶  │  Python AI Service  │
-│  (Vercel)       │  ◀────────── │  (Render / port 8080)│  ◀────────── │  (Render / port 5000│
-└─────────────────┘              └──────────────────────┘              └─────────────────────┘
-                                          │                                       │
-                               ┌──────────┴──────────┐               ┌───────────┴──────────┐
-                               │  MySQL  +  Redis     │               │  Yahoo Finance API   │
-                               │  (Database + Cache)  │               │  Finnhub · NewsAPI   │
-                               └─────────────────────┘               └──────────────────────┘
-```
+## Explore the project
 
-## 📁 Project Structure
+- Stock dashboard with charts, watchlists, and market information.
+- JWT authentication, virtual buy/sell transactions, holdings, trade history, and leaderboard.
+- Flask endpoints integrating technical indicators and financial-text sentiment.
+- Data adapters for Yahoo Finance, Finnhub, NewsAPI, and Reddit, subject to provider access and credentials.
+- Rule-based risk indicators using volume, price changes, social mentions, and news counts. These are anomaly heuristics, not verified fraud findings.
 
-```
-trademind/
-├── frontend/                    ← React.js (Recharts, Chart.js, JWT Auth)
-│   ├── src/
-│   │   ├── App.jsx              ← Router + Sidebar layout
-│   │   ├── services/api.js      ← Axios calls to Spring Boot
-│   │   ├── hooks/hooks.js       ← useAuth, useStocks, usePortfolio
-│   │   └── pages/
-│   │       ├── LoginPage.jsx    ← JWT register / login
-│   │       ├── DashboardPage.jsx← Live charts, watchlist
-│   │       ├── PredictionPage.jsx← AI Brain Score (LSTM + XGBoost + RF)
-│   │       ├── SimulatorPage.jsx← Virtual trading (₹10L)
-│   │       ├── SentimentPage.jsx← FinBERT NLP sentiment
-│   │       ├── FraudPage.jsx    ← Pump & dump detection
-│   │       └── LeaderboardPage.jsx
-│   └── package.json
-│
-├── backend/                     ← Java Spring Boot (REST APIs, Microservices)
-│   ├── pom.xml                  ← All Maven dependencies
-│   └── src/main/java/com/trademind/
-│       ├── TradeMindApplication.java   ← Entry + Security + JWT config
-│       ├── controller/Controllers.java ← Auth, Stock, Predict, Trade, Portfolio, Fraud
-│       ├── service/Services.java       ← Business logic + scheduled jobs
-│       ├── model/Models.java           ← JPA Entities (User, Stock, Trade…)
-│       └── repository/Repositories.java← Spring Data JPA queries
-│
-├── ai-service/                  ← Python Flask (LSTM · XGBoost · FinBERT)
-│   ├── app.py                   ← All ML routes
-│   └── requirements.txt
-│
-├── database/
-│   └── schema.sql               ← MySQL tables + seed data
-│
-└── .github/workflows/cicd.yml   ← CI/CD → Vercel + Render
+## Full implementation and hosted demo
+
+**Full AI service (`ai-service/app.py`):** includes training/inference code for LSTM, XGBoost, and Random Forest, pretrained `ProsusAI/finbert` inference, and a weighted signal score. It needs Python 3.11, ML dependencies, provider access, and first-use FinBERT downloads. The score and model confidence are not measured accuracy or a calibrated profit probability. No out-of-sample accuracy or investment-return results are provided. The model notes describe known implementation limitations.
+
+**Hosted demo (`ai-service/demo_app.py`):** uses simulated prices and moving-average calculations. It does not run trained ML models, live sentiment, live news, or fraud monitoring. Demo accounts and trades use an in-memory H2 database and reset when the service restarts. Free services may take time to wake up.
+
+## Architecture and technology
+
+```text
+React frontend -> Spring Boot REST API -> Flask service
+                          |
+                 MySQL for full setup
+                 H2 for local/demo profiles
 ```
 
----
+- **Frontend:** React 18, React Router, Axios, Recharts, Chart.js.
+- **Backend:** Java 17, Spring Boot 3.2, Spring Security, JWT, Spring Data JPA.
+- **AI/NLP:** Python, Flask, NumPy, pandas, TensorFlow/Keras, scikit-learn, XGBoost, Hugging Face Transformers.
+- **Data:** MySQL, H2, Yahoo Finance, Finnhub, NewsAPI, Reddit.
+- **Delivery:** GitHub Actions, Vercel, Render.
 
-## Run locally on this Windows computer
+The Spring API handles accounts, portfolios, and virtual trades. Flask handles provider adapters and experimental ML/NLP processing. The original Spring configuration supports Redis; local/demo/production profiles use an in-memory cache.
 
-The local `dev` profile uses a separate H2 database in `backend/.local-data/` and an in-memory cache. It leaves the MySQL configuration unchanged and starts with the sample stock prices from `database/schema.sql`.
+## Repository layout
 
-After dependencies are installed and the backend is built, run `./start-local.ps1` from PowerShell, then open http://localhost:3000. The frontend, backend, and AI service use ports 3000, 8080, and 5000. Startup logs are saved in `.local-run/`.
-
-Register a local account to use the dashboard. Live provider features require your own Finnhub, NewsAPI, and Reddit environment variables. Sample prices and fallback predictions are not live market results.
-
-## 🚀 Local Setup
-
-### Prerequisites
-- Node.js 20+, Java 17+, Python 3.11+, MySQL 8, Redis 7
-
-### 1️⃣ Database
-```bash
-mysql -u root -p < database/schema.sql
+```text
+frontend/                 React UI and API client
+backend/                  Spring Boot sources and tests
+ai-service/app.py         Full experimental ML/NLP service
+ai-service/demo_app.py    Lightweight simulated-data service
+ai-service/data_sources.py Provider integrations
+ai-service/test_demo.py   Demo contract tests
+database/schema.sql      MySQL schema and sample stocks
+.github/workflows/        CI configuration
+start-local.ps1           Windows local startup helper
 ```
 
-### 2️⃣ Python AI Service
-```bash
-cd ai-service
-pip install -r requirements.txt
-export NEWS_API_KEY=your_key
-python app.py
-# Running on http://localhost:5000
-```
+## Run locally
 
-### 3️⃣ Spring Boot Backend
-```bash
-cd backend
-# Edit src/main/resources/application.properties:
-#   spring.datasource.password=YOUR_MYSQL_PASSWORD
-#   finnhub.api.key=YOUR_FINNHUB_KEY
-mvn spring-boot:run
-# Running on http://localhost:8080
-```
+Use Node.js 20+, Java 17 with Maven, and Python 3.11. Install dependencies and build the backend before starting the Windows helper:
 
-### 4️⃣ React Frontend
-```bash
+```powershell
+git clone https://github.com/Sandeep-More-1610/trade-mind-ai.git
+cd trade-mind-ai
 cd frontend
-npm install
-echo "REACT_APP_API_URL=http://localhost:8080/api" > .env
-npm start
-# Running on http://localhost:3000
+npm ci
+cd ..
+py -3.11 -m venv ai-service/.venv
+.\ai-service\.venv\Scripts\Activate.ps1
+python -m pip install -r ai-service/requirements.txt
+cd backend
+mvn --batch-mode --no-transfer-progress verify
+cd ..
+.\start-local.ps1
 ```
 
----
+Open `http://localhost:3000`. The backend and Flask use ports 8080 and 5000. The helper uses the local H2 dev profile with data under `backend/.local-data/`. Sample prices and fallback responses are not live results. See [DEPLOYMENT.md](DEPLOYMENT.md) for the MySQL configuration, hosted demo, and environment variables.
 
-## 🔑 API Keys Needed
+Provider variables are `FINNHUB_API_KEY`, `NEWS_API_KEY`, `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, and `REDDIT_USER_AGENT`. Supply credentials privately. Production also needs a strong `JWT_SECRET`, database credentials, and exact frontend/API origins.
 
-| Service       | Get Free Key At                        | Used For                    |
-|---------------|----------------------------------------|-----------------------------|
-| Finnhub       | https://finnhub.io                     | Live stock quotes           |
-| NewsAPI       | https://newsapi.org                    | News headlines for NLP      |
-| Yahoo Finance | Built into `yfinance` library — free  | Historical OHLCV data       |
+To run only the lightweight service, install `ai-service/requirements-demo.txt` in a separate environment, then run `python -m flask --app demo_app run --port 5000` from `ai-service/`. This starts Flask only; the deployment guide explains the matching backend/demo frontend configuration.
 
----
+## Validation
 
-## 🌐 REST API Reference
+```powershell
+# From ai-service/: demo contracts, no model/provider access
+python -m unittest test_demo.py
+# From backend/
+mvn --batch-mode --no-transfer-progress verify
+# From frontend/
+npm ci
+npm run build
+```
 
-### Auth
-| Method | Endpoint             | Description            |
-|--------|----------------------|------------------------|
-| POST   | `/api/auth/register` | Register + get JWT     |
-| POST   | `/api/auth/login`    | Login + get JWT        |
+GitHub Actions runs the frontend build, backend tests, full AI import/health check, and demo tests. Import and health checks do not establish prediction quality or test every external provider. [MODEL_NOTES.md](MODEL_NOTES.md) records the remaining evaluation work.
 
-### Stocks
-| Method | Endpoint                        | Description              |
-|--------|---------------------------------|--------------------------|
-| GET    | `/api/stocks`                   | All stocks               |
-| GET    | `/api/stocks/{symbol}`          | Live quote (Finnhub)     |
-| GET    | `/api/stocks/{symbol}/history`  | OHLCV history            |
-| GET    | `/api/stocks/market/gainers`    | Top 5 gainers            |
+The lightweight service contract suite was rerun on 26 October 2026: 2 tests passed. This local rerun did not train or benchmark the full ML models.
 
-### AI Predictions
-| Method | Endpoint                    | Description                   |
-|--------|-----------------------------|-------------------------------|
-| GET    | `/api/predict/{symbol}`     | BUY/SELL/HOLD + AI score      |
-| GET    | `/api/predict/{symbol}/score` | Detailed AI Brain Score     |
+## Author
 
-### Virtual Trading
-| Method | Endpoint             | Description              |
-|--------|----------------------|--------------------------|
-| POST   | `/api/trade/buy`     | Buy shares (virtual ₹)   |
-| POST   | `/api/trade/sell`    | Sell shares              |
-| GET    | `/api/trade/history` | Trade history            |
-| GET    | `/api/portfolio`     | Holdings with P&L        |
-| GET    | `/api/portfolio/summary` | Balance + total worth |
+**Sandeep More** | B.Tech Computer Science and Engineering, VIT Vellore | Expected August 2028
 
-### Sentiment & Fraud
-| Method | Endpoint                       | Description              |
-|--------|--------------------------------|--------------------------|
-| GET    | `/api/sentiment/{symbol}`      | NLP sentiment per stock  |
-| GET    | `/api/sentiment/market/overview` | Fear/Greed index       |
-| GET    | `/api/fraud/alerts`            | Active fraud alerts      |
-| GET    | `/api/fraud/{symbol}`          | Risk score for a stock   |
-| GET    | `/api/leaderboard`             | Virtual trading rankings |
-
----
-
-## 🧠 AI Models
-
-| Model         | Library         | Purpose                        | Weight |
-|---------------|-----------------|--------------------------------|--------|
-| LSTM          | TensorFlow/Keras| 60-day sequence price forecast | 30%    |
-| XGBoost       | xgboost         | Feature-based classifier       | 25%    |
-| Random Forest | scikit-learn    | Ensemble signal                | 20%    |
-| FinBERT NLP   | HuggingFace     | News & social sentiment        | 25%    |
-
-Combined into one **AI Market Brain Score (0–100)** → BUY / HOLD / SELL
-
----
-
-## ☁️ Deployment
-
-| Layer      | Platform | URL                              |
-|------------|----------|----------------------------------|
-| Frontend   | Vercel   | https://trademind.vercel.app     |
-| Backend    | Render   | https://trademind-api.onrender.com |
-| AI Service | Render   | https://trademind-ai.onrender.com  |
-| Database   | PlanetScale / Railway (MySQL)        |
-| Cache      | Upstash (Redis)                      |
-
-Push to `main` → GitHub Actions builds and tests the project. Vercel deploys the frontend through its GitHub integration; Render deploys the free demo services after CI checks pass. Hosting credentials are managed by the providers, and the workflow does not require deployment tokens. See [DEPLOYMENT.md](DEPLOYMENT.md) for setup and demo limitations.
-
-The AI CI job uses CPU-only PyTorch wheels from the official PyTorch index and disables pip caching to avoid filling the runner with unused CUDA libraries. The backend integration test uses an isolated in-memory H2 database; it does not need MySQL, Redis, or API credentials.
-
----
-
-## 👤 Team
-
-**Team Lunar Tear** · Sandeep Namdevrao More · VIT Vellore
-
-Built for **HACK303 — CODE CATALYST Hackathon**
+[GitHub](https://github.com/Sandeep-More-1610) | [LinkedIn](https://www.linkedin.com/in/sandeep-more-a0799232a/)
