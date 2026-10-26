@@ -2,9 +2,9 @@
 
 A full-stack stock research and virtual-trading project built with React, Spring Boot, and Python Flask. The full AI service contains experimental LSTM, XGBoost, Random Forest, and pretrained FinBERT pipelines. A separate lightweight hosted demo uses simulated data.
 
-**Built by Sandeep More at VIT Vellore.** Placed **3rd at the Code Catalyst Hackathon** as a solo participant under the one-person team name **Lunar Tear**.
+**Built by Sandeep More at VIT Vellore.** Placed **3rd at Hack303 by Code Catalyst** as a solo participant under the one-person team name **Lunar Tear**.
 
-[Hosted demo](https://trade-mind-ai-delta-plum.vercel.app) | [Deployment guide](DEPLOYMENT.md) | [Model implementation notes](MODEL_NOTES.md)
+[Frontend preview (simulated data)](https://trade-mind-ai-delta-plum.vercel.app) | [Deployment guide](DEPLOYMENT.md) | [Model implementation notes](MODEL_NOTES.md)
 
 ## Explore the project
 
@@ -19,6 +19,10 @@ A full-stack stock research and virtual-trading project built with React, Spring
 **Full AI service (`ai-service/app.py`):** includes training/inference code for LSTM, XGBoost, and Random Forest, pretrained `ProsusAI/finbert` inference, and a weighted signal score. It needs Python 3.11, ML dependencies, provider access, and first-use FinBERT downloads. The score and model confidence are not measured accuracy or a calibrated profit probability. No out-of-sample accuracy or investment-return results are provided. The model notes describe known implementation limitations.
 
 **Hosted demo (`ai-service/demo_app.py`):** uses simulated prices and moving-average calculations. It does not run trained ML models, live sentiment, live news, or fraud monitoring. Demo accounts and trades use an in-memory H2 database and reset when the service restarts. Free services may take time to wake up.
+
+### Hosted availability check
+
+On 26 October 2026, the frontend and AI-service health endpoint returned HTTP 200. The AI service identified itself as demo mode with no trained models. Backend health requests timed out, so complete hosted authentication and virtual-trading flows were not verified in this check. Free services may sleep, but the cause of the timeouts was not established. Treat the public link as a frontend preview until backend operation is confirmed.
 
 ## Architecture and technology
 
